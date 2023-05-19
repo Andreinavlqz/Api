@@ -1,0 +1,28 @@
+<div class="home">
+
+
+    <div id="hero">
+        <h1>BIENVENIDO A LAS <br> PELICULAS</h1>
+    </div>
+
+    <main class="contenedor">
+
+        <div class="grid">
+            <div class="pelicula" *ngFor="let movie of movieList">
+                <a href="/movie-details/{{movie.id}}">
+                    <img class="pelicula__imagen"  src="{{movie.poster_path}}" alt="Poster">
+                    <div class="pelicula__informacion">
+                        <p class="pelicula__info">{{movie.title}}:</p>
+                        <p class="pelicula__info">{{movie.release_date}}:</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <button class="card card-small" (click)="loadMore()" tabindex="0">
+            <svg class="material-icons" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <span>Load More</span>
+        </button>
+    </main>
+      
+</div>

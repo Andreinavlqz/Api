@@ -1,138 +1,79 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { MovieService } from './movie.service';
-
-
-
-interface MovieDetails {
-  id: number;
-  title: string;
-  backdrop_path: string;
-  poster_path: string;
-  overview: string;
-  original_language: string;
-  vote_average: number;
-  budget: number;
-  genres: Genre[];
-  production_companies: ProductionCompany[];
-}
-
-interface Genre {
-  id: number;
-  name: string;
-}
-
-interface ProductionCompany {
-  id: number;
-  logo_path: string;
-  name: string;
-  origin_country: string;
-}
-
-interface Cast {
-  name: string;
-  character: string;
-  profile_path: string;
-}
-
-interface MovieImage {
-  file_path: string;
-}
+import { ThemoviesdbService } from '../themoviesdb.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { environment } from 'src/assets/enviroment/environment';
 
 @Component({
   selector: 'app-movie-details',
-  template: `
-    <h1>Movie Details</h1>
-    <div *ngIf="movieDetails">
-      <img [src]="getPosterImageUrl(movieDetails?.poster_path ?? '')" alt="Poster Image">
-      <h3>{{ movieDetails?.title }}</h3>
-      <img [src]="getPosterImageUrl(movieDetails?.poster_path ?? '')" alt="Poster Image">
-      <p>{{ movieDetails?.overview }}</p>
-      <p>Genre: {{ getGenreNames() }}</p>
-      <p>Language: {{ movieDetails?.original_language }}</p>
-      <p>User Rating: {{ movieDetails?.vote_average }}</p>
-      <p>Budget: {{ movieDetails?.budget }}</p>
-      <p>Production Companies: {{ getProductionCompanyNames() }}</p>
-      <h3>Cast</h3>
-      <div *ngFor="let cast of movieCast">
-        <img [src]="getCastProfileImageUrl(cast?.profile_path)" alt="Cast Profile Image">
-        <p>{{ cast?.name }}</p>
-        <p>{{ cast?.character }}</p>
-      </div>
-    </div>
-    <button (click)="loadMovieDetails()">Load Movie Details</button>
-  `
+  templateUrl: './moviedetails.component.html',
+  styleUrls: ['./moviedetails.component.css']
 })
 export class MovieDetailsComponent implements OnInit {
-  movieId!: number;
-  movieDetails: MovieDetails | undefined;
-  movieCast: Cast[] = [];
-  movieImages: MovieImage[] = [];
 
-  constructor(private route: ActivatedRoute, private movieService: MovieService) {}
+  movieId!: string;
+  movie: any;
+  genres: string = "";
+  languages: string = "";
+  companies: string = "";
+  
+  constructor(
+    private theMovieDBService: ThemoviesdbService,
+    private router: Router,
+    private route: ActivatedRoute,) { 
+      this.route.params.subscribe(params => {
+        this.movieId = params['id'];
+        this.getMovieDetails(this.movieId);
+      });
+  }
 
-  ngOnInit() {
-    this.route.params.subscribe(params => {
-      this.movieId = +params['id'];
-      this.loadMovieDetails();
+  ngOnInit(): void {
+  }
+
+  getMovieDetails(id: any) {
+    this.theMovieDBService.getMovieDetails(id).subscribe((res: any) => {
+      this.movie = res;
+      this.getCast();
+      this.getGenres();
+      this.getLanguages();
+      this.getCompanies();
+      this.movie.poster_path = `${environment.imgUrl}${this.movie.poster_path}`;
+      this.movie.backdrop_path = `${environment.imgUrlBig}${this.movie.backdrop_path}`;
     });
   }
 
-  loadMovieDetails() {
-    this.movieService.getMovieDetails(this.movieId).subscribe((data: any) => {
-      this.movieDetails = {
-        id: data.id,
-        title: data.title,
-        backdrop_path: data.backdrop_path,
-        poster_path: data.poster_path,
-        overview: data.overview,
-        original_language: data.original_language,
-        vote_average: data.vote_average,
-        budget: data.budget,
-        genres: data.genres,
-        production_companies: data.production_companies
-      };
-      this.loadMovieCast();
-      this.loadMovieImages();
+  getCast() {
+    this.theMovieDBService.getCastMovie(this.movieId).subscribe((res: any) => {
+      this.movie.cast = res['cast'].slice(0, 10).map((cast: any) => {
+        cast.imgUrl = `${environment.imgUrl}${cast.profile_path}`;
+        
+        return cast;
+      });
+      console.log(this.movie)
     });
   }
 
-  loadMovieCast() {
-    this.movieService.getMovieCredits(this.movieId).subscribe((data: any) => {
-      this.movieCast = data.cast;
-    });
+  getGenres() {
+    this.movie.genres.forEach((genre: any) => {
+      console.log(genre)
+      this.genres += genre.name + "  ";
+    })
+    console.log("genre",this.genres)
   }
 
-  loadMovieImages() {
-    this.movieService.getMovieImages(this.movieId).subscribe((data: any) => {
-      this.movieImages = data.backdrops;
-      
-    });
+  getLanguages() {
+    this.movie.spoken_languages.forEach((language: any) => {
+      console.log(language)
+      this.languages += language.english_name + "  ";
+    })
+    console.log("languages",this.languages)
   }
 
-  getBackdropImageUrl(path: string) {
-    return `https://image.tmdb.org/t/p/original/${path}`;
+  getCompanies() {
+    this.movie.production_companies.forEach((companie: any) => {
+      console.log(companie)
+      this.companies += companie.name + "  ";
+    })
+    console.log("companies",this.companies)
   }
 
-  getPosterImageUrl(path: string) {
-    return `https://image.tmdb.org/t/p/original/${path}`;
-  }
-
-  getCastProfileImageUrl(path: string) {
-    return `https://image.tmdb.org/t/p/original/${path}`;
-  }
-
-  getGenreNames() {
-    if (this.movieDetails && this.movieDetails.genres) {
-      return this.movieDetails.genres.map(genre => genre.name).join(', ');
-    }
-    return '';
-  }
-
-  getProductionCompanyNames() {
-    if (this.movieDetails && this.movieDetails.production_companies) {
-      return this.movieDetails.production_companies.map(company => company.name).join(', ');
-    }
-    return '';
-  }
 }

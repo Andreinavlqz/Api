@@ -1,1 +1,37 @@
-<p>moviedetails works!</p>
+<div class="movie-title">
+    <img src="{{movie.backdrop_path}}" width="500">
+    <h1>{{movie.title}}</h1>
+</div>
+
+
+<div class="casting">
+    <div class="ver-pelicula">
+
+        <h2>Overview</h2>
+
+
+        <div class="sinopsis">
+            <img class="peli-imagen" src="{{movie.poster_path}}" alt="Poster">
+
+            <div class="movie-content">
+                <p>{{movie.overview}}</p>
+            </div>
+
+        </div>
+
+
+        <div class="movie-info"><p>Genres:&nbsp;&nbsp; {{genres}} &nbsp;&nbsp; Languages:  &nbsp;&nbsp;{{languages}} &nbsp;&nbsp; User Score: &nbsp;&nbsp; {{movie.vote_average}}<br> <br>
+        Budget:&nbsp;&nbsp;{{movie.budget}}&nbsp;&nbsp;Companies:&nbsp;&nbsp;{{companies}}</p></div>
+
+
+        <div class="grid-cast slider">
+
+            <div class="pelicula" *ngFor="let actor of movie.cast">
+                <img class="cast-image" src="{{actor.imgUrl}}">
+                <p class="act-info">{{actor.character}}</p>
+                <p class="act-info">{{actor.name}}</p>
+            </div>
+
+        </div>
+    </div>
+</div>
